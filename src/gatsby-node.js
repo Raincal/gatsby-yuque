@@ -15,9 +15,11 @@ const createContentDigest = obj =>
 exports.sourceNodes = async ({ actions, createNodeId }, pluginOptions) => {
 	const { createNode } = actions
 	const defaults = {
+		baseUrl: 'https://www.yuque.com/api/v2/',
 		login: '',
 		repo: '',
 		mdNameFormat: 'title',
+		timeout: 10000
 	}
 
 	const options = { ...defaults, ...pluginOptions }
@@ -31,8 +33,10 @@ exports.sourceNodes = async ({ actions, createNodeId }, pluginOptions) => {
 	}
 
 	const config = {
+		baseUrl: options.baseUrl,
 		namespace: `${login}/${repo}`,
-		yuquePath: path.join(cwd, 'yuque.json')
+		yuquePath: path.join(cwd, 'yuque.json'),
+		timeout: options.timeout
 	}
 
 	const articles = await download(config)

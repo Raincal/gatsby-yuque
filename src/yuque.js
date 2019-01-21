@@ -1,25 +1,20 @@
 const axios = require('axios')
 const report = require('gatsby-cli/lib/reporter')
 
-const instance = axios.create({
-	baseURL: 'https://www.yuque.com/api/v2/',
-	timeout: 10000,
-})
-
 class YuqueClient {
 	constructor(config) {
-		this.config = config
+		this.config = Object.assign({}, config)
 		this.yuquePath = config.yuquePath
 		this._cachedArticles = []
 		this._needUpdate = false
 	}
 
 	async _fetch(api) {
-		const { namespace } = this.config
-		const path = `repos/${namespace}${api}`
+		const { baseUrl, namespace, timeout } = this.config
+		const path = `${baseUrl}repos/${namespace}${api}`
 		report.info(`request data: api: ${path}`)
 		try {
-			const result = await instance(path)
+			const result = await axios(path, { timeout })
 			return result.data
 		} catch (error) {
 			throw new Error(`请求数据失败: ${error.message}`)

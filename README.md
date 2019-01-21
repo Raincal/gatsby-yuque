@@ -32,11 +32,13 @@ plugins: [
 
 ## Options
 
-| Name           | Default | Description           |
-| -------------- | ------- | --------------------- |
-| `login`        |         | user/team unique name |
-| `repo`         |         | repo name             |
-| `mdNameFormat` | `title` | `title` or `slug`     |
+| Name           | Default                         | Description                                                                 |
+| -------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| `baseUrl`      | `https://www.yuque.com/api/v2/` | base url                                                                    |
+| `login`        |                                 | user/team unique name                                                       |
+| `repo`         |                                 | repo name                                                                   |
+| `mdNameFormat` | `title`                         | `title` or `slug`                                                           |
+| `timeout`      | `10000`                         | `timeout` specifies the number of milliseconds before the request times out |
 
 ## Query for all nodes
 

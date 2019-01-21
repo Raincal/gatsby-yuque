@@ -4,5 +4,7 @@ __tests__/*
 tests
 yarn.lock
 yarn-error.log
-!index.js
 /*.js
+!index.js
+.eslintrc.json
+.babelrc

@@ -153,7 +153,7 @@ class Downloader {
 	}
 }
 
-module.exports = async function download(yuqueConfig) {
+module.exports = async function getAllArticles(yuqueConfig) {
 	const downloader = new Downloader(yuqueConfig)
 	await downloader.autoUpdate()
 	return downloader._cachedArticles

@@ -3,10 +3,7 @@ const report = require('gatsby-cli/lib/reporter')
 
 class YuqueClient {
 	constructor(config) {
-		this.config = Object.assign({}, config)
-		this.yuquePath = config.yuquePath
-		this._cachedArticles = []
-		this._needUpdate = false
+		this.config = config
 	}
 
 	async _fetch(api) {

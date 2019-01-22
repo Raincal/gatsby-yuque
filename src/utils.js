@@ -20,7 +20,7 @@ exports.parseMatter = body => {
 		const result = grayMatter(body)
 		const data = {
 			...result.data,
-			body: result.content
+			body: formatRaw(result.content)
 		}
 		return data
 	} catch (error) {
@@ -50,6 +50,18 @@ exports.formatDate = date => {
 exports.formatArray = items => {
 	items = Array.isArray(items) ? items : isString(items) ? [items] : []
 	return `[${items.join(',')}]`
+}
+
+/**
+ * 格式化 markdown 内容
+ *
+ * @param {String} body md 文档
+ * @return {String} body
+ */
+function formatRaw(body) {
+	const multiBr = /(<br>\s){2}/gi
+	const hiddenContent = /<div style="display:none">[\s\S]*?<\/div>/gi
+	return body.replace(hiddenContent, '').replace(multiBr, '<br>')
 }
 
 /**

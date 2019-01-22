@@ -3,7 +3,7 @@ const path = require('path')
 const process = require('process')
 const cwd = process.cwd()
 
-const download = require('./download')
+const getAllArticles = require('./download')
 const { formatDate, formatArray } = require('./utils')
 
 const createContentDigest = obj =>
@@ -39,7 +39,7 @@ exports.sourceNodes = async ({ actions, createNodeId }, pluginOptions) => {
 		timeout: options.timeout
 	}
 
-	const articles = await download(config)
+	const articles = await getAllArticles(config)
 
 	articles.forEach(article => {
 		const slug = mdNameFormat === 'title' ? article.title : article.slug

@@ -51,7 +51,8 @@ plugins: [
         title
         slug
         date
-        body
+        html
+        word_count
       }
     }
   }

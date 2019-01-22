@@ -15,7 +15,7 @@ const PICK_PROPERTY = [
 	'updated_at',
 	'published_at',
 	'slug',
-	'last_editor',
+	'word_count'
 ]
 
 /**
@@ -48,23 +48,23 @@ class Downloader {
 		const { client, _cachedArticles } = this
 		return function() {
 			report.info(`download article body: ${item.title}`)
-			return client.getArticle(item.slug)
-				.then(({ data: article }) => {
-					const sourceArticle = _cachedArticles[index]
-					// matter 解析
-					const parseRet = parseMatter(article.body)
-					const newArticle = _.merge(sourceArticle, parseRet || {})
-					_cachedArticles[index] = newArticle
-				})
+			return client.getArticle(item.slug).then(({ data: article }) => {
+				const sourceArticle = _cachedArticles[index]
+				sourceArticle.html = article.body_html
+				// matter 解析
+				const parseRet = parseMatter(article.body)
+				const newArticle = _.merge(sourceArticle, parseRet || {})
+				_cachedArticles[index] = newArticle
+			})
 		}
 	}
 
 	/**
-   * 下载所有文章
-   * 并根据文章是否有更新来决定是否需要重新下载文章详情
-   *
-   * @return {Promise} queue
-   */
+	 * 下载所有文章
+	 * 并根据文章是否有更新来决定是否需要重新下载文章详情
+	 *
+	 * @return {Promise} queue
+	 */
 	async fetchArticles() {
 		const { _cachedArticles } = this
 		const articles = await this.client.getArticles()
@@ -116,8 +116,8 @@ class Downloader {
 	}
 
 	/**
-   * 读取语雀的文章缓存 json 文件
-   */
+	 * 读取语雀的文章缓存 json 文件
+	 */
 	readYuqueCache() {
 		const { yuquePath } = this
 		try {
@@ -133,14 +133,14 @@ class Downloader {
 	}
 
 	/**
-   * 写入语雀的文章缓存 json 文件
-   */
+	 * 写入语雀的文章缓存 json 文件
+	 */
 	writeYuqueCache() {
 		const { yuquePath, _cachedArticles } = this
 		if (this._needUpdate) {
 			report.info(`writing to local file: ${yuquePath}`)
 			fs.writeFileSync(yuquePath, JSON.stringify(_cachedArticles, null, 2), {
-				encoding: 'UTF8',
+				encoding: 'UTF8'
 			})
 		}
 	}

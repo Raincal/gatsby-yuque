@@ -47,12 +47,12 @@ plugins: [
   allYuqueDoc {
     edges {
       node {
-        id
         title
         slug
-        date
-        html
-        word_count
+        created_at
+        childMarkdownRemark {
+          html
+        }
       }
     }
   }
@@ -74,7 +74,7 @@ plugins: [
           slug
           date
         }
-        rawMarkdownBody
+        html
       }
     }
   }

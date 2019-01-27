@@ -1,7 +1,6 @@
 const fs = require('fs')
 const _ = require('lodash')
 const Queue = require('queue')
-const report = require('gatsby-cli/lib/reporter')
 
 const { parseMatter } = require('./utils')
 const YuqueClient = require('./yuque')
@@ -22,14 +21,16 @@ const PICK_PROPERTY = [
  * Constructor 下载器
  *
  * @prop {Object} client 语雀 client
+ * @prop {Object} context Gatsby Context
  * @prop {Object} yuqueConfig 知识库配置
  * @prop {String} yuquePath 下载的文章缓存的 JSON 文件
  * @prop {Array} _cachedArticles 文章列表
  *
  */
 class Downloader {
-	constructor(yuqueConfig) {
+	constructor(context, yuqueConfig) {
 		this.client = new YuqueClient(yuqueConfig)
+		this.reporter = context.reporter
 		this.yuqueConfig = yuqueConfig
 		this.yuquePath = yuqueConfig.yuquePath
 		this._cachedArticles = []
@@ -45,14 +46,13 @@ class Downloader {
 	 * @return {Promise} data
 	 */
 	fetchArticle(item, index) {
-		const { client, _cachedArticles } = this
+		const { client, _cachedArticles, reporter } = this
 		return function() {
-			report.info(`download article body: ${item.title}`)
+			reporter.info(`download article body: ${item.title}`)
 			return client.getArticle(item.slug).then(({ data: article }) => {
 				const sourceArticle = _cachedArticles[index]
-				sourceArticle.html = article.body_html
 				// matter 解析
-				const parseRet = parseMatter(article.body)
+				const parseRet = parseMatter(article.body, reporter)
 				const newArticle = _.merge(sourceArticle, parseRet || {})
 				_cachedArticles[index] = newArticle
 			})
@@ -66,7 +66,7 @@ class Downloader {
 	 * @return {Promise} queue
 	 */
 	async fetchArticles() {
-		const { _cachedArticles } = this
+		const { _cachedArticles, reporter } = this
 		const articles = await this.client.getArticles()
 		const realArticles = articles.data.map(article =>
 			_.pick(article, PICK_PROPERTY)
@@ -87,7 +87,7 @@ class Downloader {
 			cacheIndex = _cachedArticles.findIndex(findIndexFn)
 			if (cacheIndex < 0) {
 				// 未命中缓存，新增一条
-				report.info(`add new article: ${article.title}`)
+				reporter.info(`add new article: ${article.title}`)
 				cacheIndex = _cachedArticles.length
 				_cachedArticles.push(article)
 				this._needUpdate = true
@@ -100,7 +100,7 @@ class Downloader {
 					cacheArticle.updated_at = article.updated_at
 					this._needUpdate = true
 					// 文章有变更，更新缓存
-					report.info(`update article: ${article.title}`)
+					reporter.info(`update article: ${article.title}`)
 					queue.push(this.fetchArticle(article, cacheIndex))
 				}
 			}
@@ -109,7 +109,7 @@ class Downloader {
 		return new Promise((resolve, reject) => {
 			queue.start(function(err) {
 				if (err) return reject(err)
-				report.info('download articls done!')
+				reporter.info('download articls done!')
 				resolve()
 			})
 		})
@@ -136,9 +136,9 @@ class Downloader {
 	 * 写入语雀的文章缓存 json 文件
 	 */
 	writeYuqueCache() {
-		const { yuquePath, _cachedArticles } = this
+		const { yuquePath, _cachedArticles, reporter } = this
 		if (this._needUpdate) {
-			report.info(`writing to local file: ${yuquePath}`)
+			reporter.info(`writing to local file: ${yuquePath}`)
 			fs.writeFileSync(yuquePath, JSON.stringify(_cachedArticles, null, 2), {
 				encoding: 'UTF8'
 			})
@@ -153,8 +153,8 @@ class Downloader {
 	}
 }
 
-module.exports = async function getAllArticles(yuqueConfig) {
-	const downloader = new Downloader(yuqueConfig)
+module.exports = async function getAllArticles(context, yuqueConfig) {
+	const downloader = new Downloader(context, yuqueConfig)
 	await downloader.autoUpdate()
 	return downloader._cachedArticles
 }

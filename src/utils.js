@@ -1,7 +1,6 @@
 const dayjs = require('dayjs')
 const Entities = require('html-entities').AllHtmlEntities
 const grayMatter = require('gray-matter')
-const report = require('gatsby-cli/lib/reporter')
 
 const entities = new Entities()
 
@@ -9,9 +8,10 @@ const entities = new Entities()
  * front matter 反序列化
  *
  * @param {String} body md 文档
+ * @param {Function} reporter Gatsby Reporter
  * @return {Object} data
  */
-exports.parseMatter = body => {
+exports.parseMatter = (body, reporter) => {
 	body = entities.decode(body)
 	try {
 		// front matter 信息的 <br/> 换成 \n
@@ -24,7 +24,7 @@ exports.parseMatter = body => {
 		}
 		return data
 	} catch (error) {
-		report.error(error)
+		reporter.error(error)
 		return {
 			body
 		}

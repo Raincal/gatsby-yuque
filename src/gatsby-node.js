@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const path = require('path')
 const process = require('process')
 const cwd = process.cwd()
@@ -6,40 +5,35 @@ const cwd = process.cwd()
 const getAllArticles = require('./download')
 const { formatDate, formatArray } = require('./utils')
 
-const createContentDigest = obj =>
-	crypto
-		.createHash('md5')
-		.update(JSON.stringify(obj))
-		.digest('hex')
+exports.sourceNodes = async (context, pluginOptions) => {
+	const {
+		actions: { createNode },
+		createNodeId,
+		createContentDigest
+	} = context
 
-exports.sourceNodes = async ({ actions, createNodeId }, pluginOptions) => {
-	const { createNode } = actions
-	const defaults = {
-		baseUrl: 'https://www.yuque.com/api/v2/',
-		login: '',
-		repo: '',
-		mdNameFormat: 'title',
-		timeout: 10000
-	}
-
-	const options = { ...defaults, ...pluginOptions }
+	const {
+		baseUrl = 'https://www.yuque.com/api/v2/',
+		login = '',
+		repo = '',
+		mdNameFormat = 'title',
+		timeout = 10000
+	} = pluginOptions
 
 	delete pluginOptions.plugins
-
-	const { login, repo, mdNameFormat } = options
 
 	if (!login || !repo) {
 		return
 	}
 
 	const config = {
-		baseUrl: options.baseUrl,
 		namespace: `${login}/${repo}`,
 		yuquePath: path.join(cwd, 'yuque.json'),
-		timeout: options.timeout
+		baseUrl,
+		timeout
 	}
 
-	const articles = await getAllArticles(config)
+	const articles = await getAllArticles(context, config)
 
 	articles.forEach(article => {
 		const slug = mdNameFormat === 'title' ? article.title : article.slug

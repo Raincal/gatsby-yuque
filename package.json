@@ -1,7 +1,7 @@
 {
   "name": "gatsby-source-yuque",
   "description": "Source plugin for pulling data into Gatsby from [语雀](https://www.yuque.com) API.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Raincal <cyj94228@gmail.com>",
   "main": "index.js",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "@babel/runtime": "^7.2.0",
     "axios": "^0.18.0",
     "dayjs": "^1.8.0",
-    "gatsby-cli": "^2.4.8",
+    "debug": "^4.1.1",
     "gray-matter": "^4.0.2",
     "html-entities": "^1.2.1",
     "queue": "^5.0.0"

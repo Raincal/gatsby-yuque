@@ -1,5 +1,5 @@
 const axios = require('axios')
-const report = require('gatsby-cli/lib/reporter')
+const debug = require('./debug')
 
 class YuqueClient {
 	constructor(config) {
@@ -9,7 +9,7 @@ class YuqueClient {
 	async _fetch(api) {
 		const { baseUrl, namespace, timeout } = this.config
 		const path = `${baseUrl}repos/${namespace}${api}`
-		report.info(`request data: api: ${path}`)
+		debug(`request data: api: ${path}`)
 		try {
 			const result = await axios(path, { timeout })
 			return result.data

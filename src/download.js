@@ -10,11 +10,13 @@ const PICK_PROPERTY = [
 	'id',
 	'title',
 	'description',
+	'custom_description',
 	'created_at',
 	'updated_at',
 	'published_at',
 	'slug',
-	'word_count'
+	'word_count',
+	'cover'
 ]
 
 /**
@@ -68,9 +70,9 @@ class Downloader {
 	async fetchArticles() {
 		const { _cachedArticles, reporter } = this
 		const articles = await this.client.getArticles()
-		const realArticles = articles.data.map(article =>
-			_.pick(article, PICK_PROPERTY)
-		)
+		const realArticles = articles.data
+			.filter(article => article.title !== '无标题')
+			.map(article => _.pick(article, PICK_PROPERTY))
 		const queue = new Queue({ concurrency: 5 })
 
 		let article

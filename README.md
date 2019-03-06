@@ -49,6 +49,8 @@ plugins: [
       node {
         title
         slug
+        cover
+        description
         created_at
         childMarkdownRemark {
           html

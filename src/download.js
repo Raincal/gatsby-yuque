@@ -52,10 +52,11 @@ class Downloader {
 		return function() {
 			reporter.info(`download article body: ${item.title}`)
 			return client.getArticle(item.slug).then(({ data: article }) => {
-				const sourceArticle = _cachedArticles[index]
+				const cachedArticle = _cachedArticles[index]
 				// matter 解析
 				const parseRet = parseMatter(article.body, reporter)
-				const newArticle = _.merge(sourceArticle, parseRet || {})
+				const source = {...item, ...parseRet}
+				const newArticle = _.merge(cachedArticle, source)
 				_cachedArticles[index] = newArticle
 			})
 		}

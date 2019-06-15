@@ -1,6 +1,7 @@
 const dayjs = require('dayjs')
 const Entities = require('html-entities').AllHtmlEntities
 const grayMatter = require('gray-matter')
+const R = require('ramda')
 
 const entities = new Entities()
 
@@ -71,3 +72,8 @@ function formatRaw(body) {
 function isString(x) {
 	return Object.prototype.toString.call(x) === '[object String]'
 }
+
+// https://github.com/ramda/ramda/wiki/Cookbook#rename-keys-of-an-object
+exports.renameKeys = R.curry((keysMap, obj) =>
+	R.reduce((acc, key) => R.assoc(keysMap[key] || key, obj[key], acc), {}, R.keys(obj))
+)

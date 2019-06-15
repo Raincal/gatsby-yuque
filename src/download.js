@@ -1,8 +1,8 @@
 const fs = require('fs')
-const _ = require('lodash')
+const R = require('ramda')
 const Queue = require('queue')
 
-const { parseMatter } = require('./utils')
+const { parseMatter, renameKeys } = require('./utils')
 const YuqueClient = require('./yuque')
 
 // 需要提取的文章属性字段
@@ -11,9 +11,8 @@ const PICK_PROPERTY = [
 	'title',
 	'description',
 	'custom_description',
-	'created_at',
-	'updated_at',
 	'published_at',
+	'first_published_at',
 	'slug',
 	'word_count',
 	'cover'
@@ -56,7 +55,7 @@ class Downloader {
 				// matter 解析
 				const parseRet = parseMatter(article.body, reporter)
 				const source = {...item, ...parseRet}
-				const newArticle = _.merge(cachedArticle, source)
+				const newArticle = R.merge(cachedArticle, source)
 				_cachedArticles[index] = newArticle
 			})
 		}
@@ -71,9 +70,15 @@ class Downloader {
 	async fetchArticles() {
 		const { _cachedArticles, reporter } = this
 		const articles = await this.client.getArticles()
-		const realArticles = articles.data
-			.filter(article => article.title !== '无标题')
-			.map(article => _.pick(article, PICK_PROPERTY))
+
+		const realArticles = R.compose(
+			R.map(R.compose(
+				renameKeys({ published_at: 'updated_at', first_published_at: 'created_at' }),
+				R.pick(PICK_PROPERTY)
+			)),
+			R.filter(article => article.first_published_at)
+		)(articles.data)
+
 		const queue = new Queue({ concurrency: 5 })
 
 		let article
@@ -100,7 +105,6 @@ class Downloader {
 				cacheAvaliable =
 					+new Date(article.updated_at) === +new Date(cacheArticle.updated_at)
 				if (!cacheAvaliable) {
-					cacheArticle.updated_at = article.updated_at
 					this._needUpdate = true
 					// 文章有变更，更新缓存
 					reporter.info(`update article: ${article.title}`)

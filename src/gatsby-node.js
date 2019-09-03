@@ -16,7 +16,7 @@ exports.onCreateNode = async (
 		reporter,
 	}
 ) => {
-	if (node.internal.type === "YuqueDoc" && node.cover) {
+	if (node.internal.type === 'YuqueDoc' && node.cover) {
 		const fileNode = await createRemoteFileNode({
 			url: node.cover,
 			store,
@@ -66,7 +66,7 @@ exports.sourceNodes = async (context, pluginOptions) => {
 		const slug = mdNameFormat === 'title' ? article.title : article.slug
 
 		const template = `---
-title: ${article.title}
+title: ${article.title.replace(/^@/, '')}
 slug: ${slug}
 date: ${article.date || formatDate(article.created_at)}
 tags: ${formatArray(article.tags)}

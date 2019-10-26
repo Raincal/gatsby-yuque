@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "lerna run build"
+    "build": "lerna run build",
+    "watch": "lerna run watch"
   },
   "devDependencies": {
     "lerna": "^3.18.3"

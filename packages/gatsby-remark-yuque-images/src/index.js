@@ -1,6 +1,8 @@
 const _ = require(`lodash`)
 const path = require(`path`)
+const axios = require(`axios`)
 const fs = require(`fs-extra`)
+const crypto = require(`crypto`)
 const { fluid, traceSVG } = require(`gatsby-plugin-sharp`)
 const visitWithParents = require(`unist-util-visit-parents`)
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
@@ -16,18 +18,18 @@ const {
   getMaxWidth,
   isYuqueImage,
   parseYuqueImage,
+  buildResponsiveSizes,
   slash
 } = require(`./utils`)
 
 // If the image is hosted on yuque
-// 1. Download image to local
-// 2. Find the image file
-// 3. Find the image's size
-// 4. Filter out any responsive image sizes that are greater than the image's width
-// 5. Create the responsive images.
-// 6. Set the html w/ aspect ratio helper.
+// 1. Find the image file
+// 2. Find the image's size
+// 3. Filter out any responsive image sizes that are greater than the image's width
+// 4. Create the responsive images.
+// 5. Set the html w/ aspect ratio helper.
 
-module.exports = async ({ actions: { createNode }, files, markdownAST, pathPrefix, createContentDigest, store, cache, reporter }, pluginOptions) => {
+module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pathPrefix, createContentDigest, store, reporter }, pluginOptions) => {
   const options = _.defaults(pluginOptions, { pathPrefix }, DEFAULT_OPTIONS)
 
   const findParentLinks = ({ children }) =>
@@ -37,14 +39,13 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, pathPrefi
         node.type === `link`
     )
 
-  // const findInlineImage = ({ children }) =>
-  //   children.some(
-  //     (node, i) =>
-  //       node.type == `image` &&
-  //       children[i - 1] &&
-  //       (children[i - 1].type == `image` || children[i - 1].type == `text`)
-  //   )
-  const findInlineImage = ({ children }) => false
+  const findInlineImage = ({ children }) =>
+    children.some(
+      (node, i) =>
+        node.type == `image` &&
+        children[i - 1] &&
+        (children[i - 1].type == `image` || children[i - 1].type == `text`)
+    )
 
   // This will only work for markdown syntax image tags
   const markdownImageNodes = []
@@ -69,7 +70,169 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, pathPrefi
     isInline,
     yuqueImage
   ) => {
-    const imageDir = path.join(store.getState().program.directory, options.imageDir, yuqueImage.folder)
+    const originalImg = yuqueImage.url
+    const optionsMaxWidth = options.maxWidth
+    const yuqueImgAlt = node.alt ? node.alt.split(`.`).shift() : ``
+
+    let maxWidth = optionsMaxWidth
+
+    isInLink = yuqueImage.styles.link || isInLink
+
+    const optionsHash = crypto
+      .createHash(`md5`)
+      .update(JSON.stringify(options))
+      .digest(`hex`)
+
+    const cacheKey = `remark-images-yq-${originalImg.split(`/`)[8]}-${optionsHash}`
+    const cahedRawHTML = await cache.get(cacheKey)
+
+    if (cahedRawHTML) {
+      return cahedRawHTML
+    }
+
+    try {
+      const response = await axios({
+        method: `GET`,
+        url: `${originalImg}?x-oss-process=image/info`
+      })
+
+      const { FileSize, ImageWidth, ImageHeight } = response.data
+
+      const metadata = {
+        fileSize: +FileSize.value,
+        width: +ImageWidth.value,
+        height: +ImageHeight.value
+      }
+
+      const yuqueImgWidth = yuqueImage.styles.width || metadata.width
+      const yuqueImgOriginalWidth =
+        yuqueImage.styles.originWidth || metadata.width
+
+      options.maxWidth = maxWidth =
+        yuqueImgWidth >= `746`
+          ? getMaxWidth(optionsMaxWidth, yuqueImgOriginalWidth)
+          : getMaxWidth(optionsMaxWidth, yuqueImgWidth)
+
+      const responsiveSizesResult = await buildResponsiveSizes({
+        metadata,
+        imageUrl: originalImg,
+        options
+      })
+
+      // Calculate the paddingBottom %
+      const ratio = `${(1 / responsiveSizesResult.aspectRatio) * 100}%`
+
+      const fallbackSrc = originalImg
+      const srcSet = responsiveSizesResult.srcSet
+      const presentationWidth = responsiveSizesResult.presentationWidth
+
+      const inlineImgStyle = `
+        display: inline-block;
+        width: ${maxWidth}px;
+        vertical-align: top;
+      `
+
+      // Create our base image tag
+      let imageTag = `
+      <img
+        class="${imageClass}"
+        alt="${yuqueImgAlt}"
+        title="${node.title ? node.title : ``}"
+        src="${fallbackSrc}"
+        srcset="${srcSet}"
+        sizes="${responsiveSizesResult.sizes}"
+      />
+   `.trim()
+
+      // if options.withWebp is enabled, add a webp version and change the image tag to a picture tag
+      if (options.withWebp) {
+        imageTag = `
+        <picture>
+          <source
+            srcset="${responsiveSizesResult.webpSrcSet}"
+            sizes="${responsiveSizesResult.sizes}"
+            type="image/webp"
+          />
+          <source
+            srcset="${srcSet}"
+            sizes="${responsiveSizesResult.sizes}"
+          />
+          <img
+            class="${imageClass}"
+            src="${fallbackSrc}"
+            alt="${yuqueImgAlt}"
+            title="${node.title ? node.title : ``}"
+          />
+        </picture>
+      `.trim()
+      }
+
+      // Construct new image node w/ aspect ratio placeholder
+      let rawHTML = `
+        <span
+          class="${imageBackgroundClass}"
+          style="padding-bottom: ${ratio}; position: relative; bottom: 0; left: 0; background-image: url('${
+        responsiveSizesResult.bg
+        }'); background-size: cover; display: block;"
+        ></span>
+        ${imageTag}
+      `.trim()
+
+      // Make linking to original image optional.
+      if (!isInLink && options.linkImagesToOriginal) {
+        rawHTML = `
+          <a
+            class="gatsby-resp-image-link"
+            href="${originalImg}"
+            style="display: ${isInline ? `inline-block` : `block`}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ${rawHTML}
+          </a>
+      `.trim()
+      } else if (yuqueImage.styles.link) {
+        // Make linking to the giving link.
+        rawHTML = `
+          <a
+            class="gatsby-resp-image-link"
+            href="${yuqueImage.styles.link}"
+            style="display: block"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ${rawHTML}
+          </a>
+        `.trim()
+      }
+
+      rawHTML = `
+        <span
+          class="${imageWrapperClass}"
+          style="position: relative; display: block; max-width: ${maxWidth}px; margin-left: auto; margin-right: auto; ${
+        isInline ? inlineImgStyle : ``
+        }${options.wrapperStyle}"
+        >
+          ${rawHTML}
+        </span>
+      `.trim()
+
+      await cache.set(cacheKey, rawHTML)
+      return rawHTML
+    } catch (error) {
+      reporter.error(error)
+      return null
+    }
+  }
+
+  const fetchImagesAndUpdateNode = async (
+    node,
+    resolve,
+    isInLink,
+    isInline,
+    yuqueImage
+  ) => {
+    const imageDir = path.join(store.getState().program.directory, `static/${options.imageDir}`, yuqueImage.folder)
     const pluginCacheDir = path.join(store.getState().program.directory, `.cache/gatsby-source-filesystem`)
 
     const imagePath = slash(path.join(imageDir, yuqueImage.filename))
@@ -102,175 +265,30 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, pathPrefi
       return resolve()
     }
 
-    const fluidResult = await fluid({
-      file: imageNode,
-      args: options,
-      reporter,
-      cache,
-    })
-
-    if (!fluidResult) {
-      return resolve()
-    }
-
-    const originalImg = yuqueImage.url
-    const { src: fallbackSrc, srcSet, presentationWidth } = fluidResult
+    const finalImagePath = `/${options.imageDir}/${yuqueImage.folder}/${imageNode.base}`
 
     const optionsMaxWidth = options.maxWidth
-    const yuqueImgAlt = node.alt ? node.alt.split(`.`).shift() : ``
 
     let maxWidth = optionsMaxWidth
 
-    isInLink = yuqueImage.styles.link || isInLink
+    const yuqueImgWidth = yuqueImage.styles.width
+    const yuqueImgOriginalWidth = yuqueImage.styles.originWidth
 
-    const yuqueImgWidth = yuqueImage.styles.width || presentationWidth
-    const yuqueImgOriginalWidth = yuqueImage.styles.originWidth || presentationWidth
-
-    maxWidth = yuqueImgWidth >= `746`
-      ? getMaxWidth(optionsMaxWidth, yuqueImgOriginalWidth)
-      : getMaxWidth(optionsMaxWidth, yuqueImgWidth)
-
-    const inlineImgStyle = `
-        display: inline-block;
-        width: ${maxWidth}px;
-        vertical-align: top;
-      `
-
-    // Create our base image tag
-    let imageTag = `
-      <img
-        class="${imageClass}"
-        alt="${yuqueImgAlt}"
-        title="${node.title ? node.title : ``}"
-        src="${fallbackSrc}"
-        srcset="${srcSet}"
-        sizes="${fluidResult.sizes}"
-      />
-   `.trim()
-
-    // if options.withWebp is enabled, add a webp version and change the image tag to a picture tag
-    if (options.withWebp) {
-      const webpFluidResult = await fluid({
-        file: imageNode,
-        args: _.defaults(
-          { toFormat: `WEBP` },
-          // override options if it's an object, otherwise just pass through defaults
-          options.withWebp === true ? {} : options.withWebp,
-          pluginOptions,
-          DEFAULT_OPTIONS
-        ),
-        reporter,
-      })
-
-      if (!webpFluidResult) {
-        return resolve()
-      }
-
-      imageTag = `
-        <picture>
-          <source
-            srcset="${webpFluidResult.srcSet}"
-            sizes="${webpFluidResult.sizes}"
-            type="${webpFluidResult.srcSetType}"
-          />
-            <source
-            srcset="${srcSet}"
-            sizes="${fluidResult.sizes}"
-            type="${fluidResult.srcSetType}"
-          />
-          <img
-            class="${imageClass}"
-            src="${fallbackSrc}"
-            alt="${yuqueImgAlt}"
-            title="${node.title ? node.title : ``}"
-          />
-        </picture>
-      `.trim()
+    if (yuqueImgWidth) {
+      maxWidth = yuqueImgWidth >= `746`
+        ? getMaxWidth(optionsMaxWidth, yuqueImgOriginalWidth)
+        : getMaxWidth(optionsMaxWidth, yuqueImgWidth)
+    } else {
+      maxWidth = ``
     }
 
-    let placeholderImageData = fluidResult.base64
+    const imageStyle = maxWidth ? `
+          width: ${maxWidth}px;
+        `.trim() : ``
 
-    // if options.tracedSVG is enabled generate the traced SVG and use that as the placeholder image
-    if (options.tracedSVG) {
-      let args = typeof options.tracedSVG === `object` ? options.tracedSVG : {}
-
-      // Translate Potrace constants (e.g. TURNPOLICY_LEFT, COLOR_AUTO) to the values Potrace expects
-      const { Potrace } = require(`potrace`)
-      const argsKeys = Object.keys(args)
-      args = argsKeys.reduce((result, key) => {
-        const value = args[key]
-        // eslint-disable-next-line no-prototype-builtins
-        result[key] = Potrace.hasOwnProperty(value) ? Potrace[value] : value
-        return result
-      }, {})
-
-      const tracedSVG = await traceSVG({
-        file: imageNode,
-        args,
-        fileArgs: args,
-        cache,
-        reporter,
-      })
-
-      // Escape single quotes so the SVG data can be used in inline style attribute with single quotes
-      placeholderImageData = tracedSVG.replace(/'/g, `\\'`)
-    }
-
-    const ratio = `${(1 / fluidResult.aspectRatio) * 100}%`
-
-    const wrapperStyle =
-      typeof options.wrapperStyle === `function`
-        ? options.wrapperStyle(fluidResult)
-        : options.wrapperStyle
-
-    let rawHTML = `
-        <span
-          class="${imageBackgroundClass}"
-          style="padding-bottom: ${ratio}; position: relative; bottom: 0; left: 0; background-image: url('${placeholderImageData}'); background-size: cover; display: block;"
-        ></span>
-        ${imageTag}
-      `.trim()
-
-    // Make linking to original image optional.
-    if (!isInLink && options.linkImagesToOriginal) {
-      rawHTML = `
-          <a
-            class="gatsby-resp-image-link"
-            href="${originalImg}"
-            style="display: ${isInline ? `inline-block` : `block`}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ${rawHTML}
-          </a>
-      `.trim()
-    } else if (yuqueImage.styles.link) {
-      // Make linking to the giving link.
-      rawHTML = `
-          <a
-            class="gatsby-resp-image-link"
-            href="${yuqueImage.styles.link}"
-            style="display: block"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ${rawHTML}
-          </a>
-        `.trim()
-    }
-
-    rawHTML = `
-        <span
-          class="${imageWrapperClass}"
-          style="position: relative; display: block; max-width: ${maxWidth}px; margin-left: auto; margin-right: auto; ${
-      isInline ? inlineImgStyle : ``
-      }${wrapperStyle}"
-        >
-          ${rawHTML}
-        </span>
-      `.trim()
-
-    return rawHTML
+    return `
+      <img src="${finalImagePath}" style="${imageStyle}"/>
+    `
   }
 
   return Promise.all(
@@ -282,7 +300,23 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, pathPrefi
             const yuqueImage = parseYuqueImage(node.url)
             const fileType = yuqueImage.ext
 
-            if (fileType !== `gif` && fileType !== `svg`) {
+            if (options.local) {
+              const rawHTML = await fetchImagesAndUpdateNode(
+                node,
+                resolve,
+                isInLink,
+                isInline,
+                yuqueImage
+              )
+
+              if (rawHTML) {
+                // Replace the image node with an inline HTML node.
+                node.type = `html`
+                node.value = rawHTML
+              }
+
+              return resolve(node)
+            } else if (fileType !== `gif` && fileType !== `svg`) {
               const rawHTML = await generateImagesAndUpdateNode(
                 node,
                 resolve,

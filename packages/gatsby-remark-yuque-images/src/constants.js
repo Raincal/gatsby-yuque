@@ -1,11 +1,11 @@
 exports.DEFAULT_OPTIONS = {
+  local: false,
   maxWidth: 746,
+  withWebp: false,
   wrapperStyle: ``,
   backgroundColor: `white`,
   linkImagesToOriginal: true,
-  withWebp: false,
-  tracedSVG: false,
-  imageDir: `content/static`,
+  imageDir: `yuque`,
 }
 
 exports.imageClass = `gatsby-resp-image-image`

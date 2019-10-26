@@ -16,13 +16,6 @@ module.exports = {
       },
     },
     {
-      resolve: 'gatsby-source-filesystem',
-      options: {
-        path: `${__dirname}/content`,
-        name: 'yuque-images',
-      },
-    },
-    {
       resolve: 'gatsby-source-yuque',
       options: {
         login: siteConfig.yuque.login,

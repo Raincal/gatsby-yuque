@@ -1,5 +1,5 @@
-const axios = require('axios')
-const debug = require('./debug')
+const axios = require(`axios`)
+const debug = require(`./debug`)
 
 class YuqueClient {
 	constructor(config) {
@@ -19,7 +19,7 @@ class YuqueClient {
 	}
 
 	async getArticles() {
-		const api = '/docs'
+		const api = `/docs`
 		const result = await this._fetch(api)
 		return result
 	}

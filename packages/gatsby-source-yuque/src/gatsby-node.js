@@ -1,10 +1,10 @@
-const path = require('path')
-const process = require('process')
-const { createRemoteFileNode } = require('gatsby-source-filesystem')
+const path = require(`path`)
+const process = require(`process`)
+const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
 const cwd = process.cwd()
 
-const getAllArticles = require('./download')
-const { formatDate, formatArray } = require('./utils')
+const getAllArticles = require(`./download`)
+const { formatDate, formatArray } = require(`./utils`)
 
 exports.onCreateNode = async (
 	{
@@ -16,7 +16,7 @@ exports.onCreateNode = async (
 		reporter,
 	}
 ) => {
-	if (node.internal.type === 'YuqueDoc' && node.cover) {
+	if (node.internal.type === `YuqueDoc` && node.cover) {
 		const fileNode = await createRemoteFileNode({
 			url: node.cover,
 			store,
@@ -40,10 +40,10 @@ exports.sourceNodes = async (context, pluginOptions) => {
 	} = context
 
 	const {
-		baseUrl = 'https://www.yuque.com/api/v2/',
-		login = '',
-		repo = '',
-		mdNameFormat = 'title',
+		baseUrl = `https://www.yuque.com/api/v2/`,
+		login = ``,
+		repo = ``,
+		mdNameFormat = `title`,
 		timeout = 10000
 	} = pluginOptions
 
@@ -55,7 +55,7 @@ exports.sourceNodes = async (context, pluginOptions) => {
 
 	const config = {
 		namespace: `${login}/${repo}`,
-		yuquePath: path.join(cwd, 'yuque.json'),
+		yuquePath: path.join(cwd, `yuque.json`),
 		baseUrl,
 		timeout
 	}
@@ -63,10 +63,10 @@ exports.sourceNodes = async (context, pluginOptions) => {
 	const articles = await getAllArticles(context, config)
 
 	articles.forEach(article => {
-		const slug = mdNameFormat === 'title' ? article.title : article.slug
+		const slug = mdNameFormat === `title` ? article.title : article.slug
 
 		const template = `---
-title: ${article.title.replace(/^@/, '')}
+title: ${article.title.replace(/^@/, ``)}
 slug: ${slug}
 date: ${article.date || formatDate(article.created_at)}
 tags: ${formatArray(article.tags)}
@@ -81,8 +81,8 @@ ${article.body}`
 			parent: null,
 			children: [],
 			internal: {
-				type: 'YuqueDoc',
-				mediaType: 'text/markdown',
+				type: `YuqueDoc`,
+				mediaType: `text/markdown`,
 				content: template,
 				contentDigest: createContentDigest(article)
 			}

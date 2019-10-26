@@ -1,21 +1,21 @@
-const fs = require('fs')
-const R = require('ramda')
-const Queue = require('queue')
+const fs = require(`fs`)
+const R = require(`ramda`)
+const Queue = require(`queue`)
 
-const { parseMatter, renameKeys } = require('./utils')
-const YuqueClient = require('./yuque')
+const { parseMatter, renameKeys } = require(`./utils`)
+const YuqueClient = require(`./yuque`)
 
 // 需要提取的文章属性字段
 const PICK_PROPERTY = [
-	'id',
-	'title',
-	'description',
-	'custom_description',
-	'published_at',
-	'first_published_at',
-	'slug',
-	'word_count',
-	'cover'
+	`id`,
+	`title`,
+	`description`,
+	`custom_description`,
+	`published_at`,
+	`first_published_at`,
+	`slug`,
+	`word_count`,
+	`cover`
 ]
 
 /**
@@ -73,7 +73,7 @@ class Downloader {
 
 		const realArticles = R.compose(
 			R.map(R.compose(
-				renameKeys({ published_at: 'updated_at', first_published_at: 'created_at' }),
+				renameKeys({ published_at: `updated_at`, first_published_at: `created_at` }),
 				R.pick(PICK_PROPERTY)
 			)),
 			R.filter(article => article.first_published_at)
@@ -116,7 +116,7 @@ class Downloader {
 		return new Promise((resolve, reject) => {
 			queue.start(function(err) {
 				if (err) return reject(err)
-				reporter.info('download articls done!')
+				reporter.info(`download articls done!`)
 				resolve()
 			})
 		})
@@ -147,7 +147,7 @@ class Downloader {
 		if (this._needUpdate) {
 			reporter.info(`writing to local file: ${yuquePath}`)
 			fs.writeFileSync(yuquePath, JSON.stringify(_cachedArticles, null, 2), {
-				encoding: 'UTF8'
+				encoding: `UTF8`
 			})
 		}
 	}

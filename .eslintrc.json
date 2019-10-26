@@ -6,14 +6,16 @@
   },
   "extends": "eslint:recommended",
   "parserOptions": {
+    "sourceType": "module",
     "ecmaVersion": 2018
   },
   "rules": {
-    "indent": ["error", "tab"],
     "linebreak-style": ["error", "unix"],
-    "quotes": ["error", "single"],
+    "quotes": ["error", "backtick"],
     "semi": ["error", "never"],
     "no-console": "warn",
-    "prefer-const": ["error"]
+    "prefer-const": ["error", { "destructuring": "all" }],
+    "no-unused-vars": "off",
+    "require-atomic-updates": "off"
   }
 }

@@ -5,13 +5,13 @@
   "author": "Raincal <cyj94228@gmail.com>",
   "main": "index.js",
   "license": "MIT",
-  "homepage": "https://github.com/Raincal/gatsby-source-yuque#readme",
+  "homepage": "https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-source-yuque#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Raincal/gatsby-source-yuque"
+    "url": "git+https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-source-yuque"
   },
   "bugs": {
-    "url": "https://github.com/Raincal/gatsby-source-yuque/issues"
+    "url": "https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-source-yuque/issues"
   },
   "scripts": {
     "build": "babel src --out-dir . --ignore **/__tests__",

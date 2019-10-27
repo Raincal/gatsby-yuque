@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Raincal/gatsby-remark-yuque-images"
+    "url": "git+https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-remark-yuque-images"
   },
   "bugs": {
-    "url": "https://github.com/Raincal/gatsby-remark-yuque-images/issues"
+    "url": "https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-remark-yuque-images/issues"
   },
-  "homepage": "https://github.com/Raincal/gatsby-remark-yuque-images#readme",
+  "homepage": "https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-remark-yuque-images#readme",
   "dependencies": {
     "@babel/runtime": "^7.5.5",
     "axios": "^0.19.0",

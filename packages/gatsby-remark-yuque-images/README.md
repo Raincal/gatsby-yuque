@@ -6,7 +6,7 @@
 [npm-image]: https://img.shields.io/npm/v/gatsby-remark-yuque-images.svg?style=flat-square
 [npm-url]: https://www.npmjs.com/package/gatsby-remark-yuque-images
 [license-image]: https://img.shields.io/github/license/Raincal/gatsby-remark-yuque-images.svg?style=flat-square
-[license-url]: https://github.com/Raincal/gatsby-remark-yuque-images/blob/master/LICENSE
+[license-url]: https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-remark-yuque-images/LICENSE
 
 Processes images from [语雀](https://www.yuque.com).
 
@@ -49,4 +49,4 @@ plugins: [
 
 ## LICENSE
 
-[MIT](https://github.com/Raincal/gatsby-remark-yuque-images/blob/master/LICENSE)
+[MIT](https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-remark-yuque-images/LICENSE)

@@ -108,10 +108,9 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
       const yuqueImgOriginalWidth =
         yuqueImage.styles.originWidth || metadata.width
 
-      options.maxWidth = maxWidth =
-        yuqueImgWidth >= `746`
-          ? getMaxWidth(optionsMaxWidth, yuqueImgOriginalWidth)
-          : getMaxWidth(optionsMaxWidth, yuqueImgWidth)
+      maxWidth = yuqueImgWidth >= `746`
+        ? getMaxWidth(optionsMaxWidth, yuqueImgOriginalWidth)
+        : getMaxWidth(optionsMaxWidth, yuqueImgWidth)
 
       const responsiveSizesResult = await buildResponsiveSizes({
         metadata,
@@ -129,7 +128,7 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
       const inlineImgStyle = `
         display: inline-block;
         width: ${maxWidth}px;
-        vertical-align: top;
+        vertical-align: bottom;
       `
 
       // Create our base image tag
@@ -184,7 +183,6 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
           <a
             class="gatsby-resp-image-link"
             href="${originalImg}"
-            style="display: ${isInline ? `inline-block` : `block`}"
             target="_blank"
             rel="noopener noreferrer"
           >

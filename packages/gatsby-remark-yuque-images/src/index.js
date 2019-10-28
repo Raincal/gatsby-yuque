@@ -128,6 +128,7 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
       const inlineImgStyle = `
         display: inline-block;
         width: ${maxWidth}px;
+        max-width: 100%;
         vertical-align: bottom;
       `
 

@@ -10,7 +10,7 @@ exports.onCreateNode = async (
 	{
 		actions: { createNode },
 		node,
-		createContentDigest,
+		createNodeId,
 		store,
 		cache,
 		reporter,
@@ -22,12 +22,12 @@ exports.onCreateNode = async (
 			store,
 			cache,
 			createNode,
-			createNodeId: createContentDigest,
+			createNodeId,
 			reporter,
 		})
 
 		if (fileNode) {
-			node.cover___NODE = fileNode.id
+			node.coverImg___NODE = fileNode.id
 		}
 	}
 }

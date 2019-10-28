@@ -24,13 +24,13 @@
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.15",
     "potrace": "^2.1.2",
-    "unist-util-visit-parents": "^2.1.2"
+    "unist-util-visit-parents": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "babel-preset-gatsby-package": "^0.2.2",
-    "cross-env": "^5.2.0"
+    "cross-env": "^6.0.3"
   },
   "peerDependencies": {
     "gatsby": "^2.0.0",

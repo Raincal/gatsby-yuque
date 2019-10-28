@@ -61,30 +61,6 @@ plugins: [
 }
 ```
 
-## Or
-
-```graphql
-{
-  allMarkdownRemark(
-    sort: { order: DESC, fields: [frontmatter___date] }
-    limit: 2000
-  ) {
-    edges {
-      node {
-        frontmatter {
-          title
-          slug
-          date
-        }
-        html
-      }
-    }
-  }
-}
-```
-
-### [Hexo version](https://github.com/x-cold/yuque-hexo)
-
 ## LICENSE
 
 [MIT](https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-source-yuque/LICENSE)

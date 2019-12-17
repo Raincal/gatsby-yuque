@@ -132,6 +132,15 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
         vertical-align: bottom;
       `
 
+      const imageStyle = `
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        vertical-align: middle;
+        position: absolute;
+        top: 0;
+        left: 0;`.replace(/\s*(\S+:)\s*/g, `$1`)
+
       // Create our base image tag
       let imageTag = `
       <img
@@ -141,6 +150,7 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
         src="${fallbackSrc}"
         srcset="${srcSet}"
         sizes="${responsiveSizesResult.sizes}"
+        style="${imageStyle}"
       />
    `.trim()
 
@@ -162,6 +172,7 @@ module.exports = async ({ actions: { createNode }, files, markdownAST, cache, pa
             src="${fallbackSrc}"
             alt="${yuqueImgAlt}"
             title="${node.title ? node.title : ``}"
+            style="${imageStyle}"
           />
         </picture>
       `.trim()

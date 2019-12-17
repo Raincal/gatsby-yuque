@@ -1,7 +1,7 @@
 {
   "name": "gatsby-source-yuque",
   "description": "Source plugin for pulling data into Gatsby from [语雀](https://www.yuque.com) API.",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "author": "Raincal <cyj94228@gmail.com>",
   "main": "index.js",
   "license": "MIT",

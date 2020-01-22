@@ -1,0 +1,30 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Clone starter
+      run: |
+        git clone https://github.com/Raincal/gatsby-yuque-starter.git yuque-starter
+    - name: Commit files
+      run: |
+        COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+        cp -rf yuque-starter/.git starters/gatsby-yuque-starter
+        cd starters/gatsby-yuque-starter
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "$COMMIT_MESSAGE" -a
+        cd ../../
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.YUQUE_TOKEN }}
+        directory: starters/gatsby-yuque-starter
+        repository: Raincal/gatsby-yuque-starter

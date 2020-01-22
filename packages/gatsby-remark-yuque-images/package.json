@@ -1,7 +1,7 @@
 {
   "name": "gatsby-remark-yuque-images",
   "description": "Processes images from yuque",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Raincal <cyj94228@gmail.com>",
   "main": "index.js",
   "license": "MIT",

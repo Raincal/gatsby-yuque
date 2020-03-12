@@ -19,23 +19,23 @@
   },
   "homepage": "https://github.com/Raincal/gatsby-yuque/tree/master/packages/gatsby-remark-yuque-images#readme",
   "dependencies": {
-    "@babel/runtime": "^7.8.3",
+    "@babel/runtime": "^7.8.7",
     "axios": "^0.19.2",
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.15",
     "potrace": "^2.1.2",
-    "unist-util-visit-parents": "^3.0.1"
+    "unist-util-visit-parents": "^3.0.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.3",
-    "@babel/core": "^7.8.3",
-    "babel-preset-gatsby-package": "^0.2.15",
-    "cross-env": "^6.0.3"
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.7",
+    "babel-preset-gatsby-package": "^0.2.17",
+    "cross-env": "^7.0.2"
   },
   "peerDependencies": {
-    "gatsby": "^2.0.0",
-    "gatsby-plugin-sharp": "^2.0.0",
-    "gatsby-source-filesystem": "^2.1.9"
+    "gatsby": "^2.19.40",
+    "gatsby-plugin-sharp": "^2.4.11",
+    "gatsby-source-filesystem": "^2.1.53"
   },
   "keywords": [
     "gatsby",

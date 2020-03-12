@@ -25,6 +25,6 @@ jobs:
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.YUQUE_TOKEN }}
+        github_token: ${{ secrets.YUQUE_REPO_TOKEN }}
         directory: starters/gatsby-yuque-starter
         repository: Raincal/gatsby-yuque-starter

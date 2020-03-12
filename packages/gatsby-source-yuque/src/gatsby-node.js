@@ -1,7 +1,9 @@
 const path = require(`path`)
 const process = require(`process`)
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
+
 const cwd = process.cwd()
+const token = process.env.YUQUE_TOKEN
 
 const getAllArticles = require(`./download`)
 const { formatDate, formatArray } = require(`./utils`)
@@ -13,17 +15,15 @@ exports.onCreateNode = async (
 		createNodeId,
 		store,
 		cache,
-		reporter,
 	}
 ) => {
-	if (node.internal.type === `YuqueDoc` && node.cover) {
+	if (node.internal.type === `YuqueDoc` && node.cover && !node.cover.includes(`svg`)) {
 		const fileNode = await createRemoteFileNode({
 			url: node.cover,
 			store,
 			cache,
 			createNode,
 			createNodeId,
-			reporter,
 		})
 
 		if (fileNode) {
@@ -36,7 +36,8 @@ exports.sourceNodes = async (context, pluginOptions) => {
 	const {
 		actions: { createNode },
 		createNodeId,
-		createContentDigest
+		createContentDigest,
+		reporter
 	} = context
 
 	const {
@@ -53,11 +54,17 @@ exports.sourceNodes = async (context, pluginOptions) => {
 		return
 	}
 
+	if (!token) {
+		reporter.error(`TOKEN of yuque is required.`)
+		return
+	}
+
 	const config = {
 		namespace: `${login}/${repo}`,
 		yuquePath: path.join(cwd, `yuque.json`),
 		baseUrl,
-		timeout
+		timeout,
+		token
 	}
 
 	const articles = await getAllArticles(context, config)

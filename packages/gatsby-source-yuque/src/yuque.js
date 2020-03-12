@@ -7,14 +7,21 @@ class YuqueClient {
 	}
 
 	async _fetch(api) {
-		const { baseUrl, namespace, timeout } = this.config
+		const { baseUrl, namespace, timeout, token } = this.config
 		const path = `${baseUrl}repos/${namespace}${api}`
+		const options = {
+			url: path,
+			headers: {
+				'X-Auth-Token': token,
+				timeout
+			}
+		}
 		debug(`request data: api: ${path}`)
 		try {
-			const result = await axios(path, { timeout })
+			const result = await axios(options)
 			return result.data
 		} catch (error) {
-			throw new Error(`请求数据失败: ${error.message}`)
+			throw new Error(`请求数据失败: ${error.message}\n${JSON.stringify(error)}`)
 		}
 	}
 

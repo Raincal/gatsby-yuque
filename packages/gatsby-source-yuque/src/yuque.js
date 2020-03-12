@@ -21,7 +21,7 @@ class YuqueClient {
 			const result = await axios(options)
 			return result.data
 		} catch (error) {
-			throw new Error(`请求数据失败: ${error.message}\n${JSON.stringify(error)}`)
+			throw new Error(`请求数据失败: ${error.message}`)
 		}
 	}
 

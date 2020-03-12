@@ -8,30 +8,6 @@ const token = process.env.YUQUE_TOKEN
 const getAllArticles = require(`./download`)
 const { formatDate, formatArray } = require(`./utils`)
 
-exports.onCreateNode = async (
-	{
-		actions: { createNode },
-		node,
-		createNodeId,
-		store,
-		cache,
-	}
-) => {
-	if (node.internal.type === `YuqueDoc` && node.cover && !node.cover.includes(`svg`)) {
-		const fileNode = await createRemoteFileNode({
-			url: node.cover,
-			store,
-			cache,
-			createNode,
-			createNodeId,
-		})
-
-		if (fileNode) {
-			node.coverImg___NODE = fileNode.id
-		}
-	}
-}
-
 exports.sourceNodes = async (context, pluginOptions) => {
 	const {
 		actions: { createNode },
@@ -98,4 +74,33 @@ ${article.body}`
 	})
 
 	return
+}
+
+exports.createResolvers = async ({
+	actions: { createNode },
+	cache,
+	createNodeId,
+	createResolvers,
+	store,
+	reporter,
+}) => {
+	createResolvers({
+		YuqueDoc: {
+			coverImg: {
+				type: `File`,
+				resolve(source) {
+					if (source.cover && !source.cover.includes(`svg`)) {
+						return createRemoteFileNode({
+							url: source.cover,
+							store,
+							cache,
+							createNode,
+							createNodeId,
+							reporter,
+						})
+					}
+				},
+			},
+		},
+	})
 }
